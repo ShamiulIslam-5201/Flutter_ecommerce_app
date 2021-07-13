@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1096934456358",
+    "project_id": "ecommerceshop-e3f94",
+    "storage_bucket": "ecommerceshop-e3f94.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1096934456358:android:42972e512b8f2b08c63ae7",
+        "android_client_info": {
+          "package_name": "com.shamiul.eshop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1096934456358-2ec4t9hfos8qrftud9bele2b23socn6g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC4uWby6Qq1527BjvStIGf2D9QkKR61e-s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1096934456358-2ec4t9hfos8qrftud9bele2b23socn6g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
