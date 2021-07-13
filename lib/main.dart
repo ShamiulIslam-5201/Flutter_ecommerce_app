@@ -83,7 +83,7 @@ class _SplashScreenState extends State<SplashScreen>
             Image.asset("images/welcome.png"),
             SizedBox(height: 20.0),
             Text(
-              "Worlds largest & Number online shop",
+              "Worlds largest & Number one online shop",
               style: TextStyle(
                 color: Colors.white
               ),
