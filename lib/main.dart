@@ -80,7 +80,7 @@ class _SplashScreenState extends State<SplashScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset("welcome.png"),
+            Image.asset("images/welcome.png"),
             SizedBox(height: 20.0),
             Text(
               "Worlds largest & Number online shop",
