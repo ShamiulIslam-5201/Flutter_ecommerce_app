@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_shop/Widgets/customTextField.dart';
 import 'package:e_shop/DialogBox/errorDialog.dart';
 import 'package:e_shop/DialogBox/loadingDialog.dart';
@@ -33,7 +34,6 @@ class _RegisterState extends State<Register> {
 
   @override
   Widget build(BuildContext context) {
-
     double _screenWidth = MediaQuery.of(context).size.width, _screenHeight = MediaQuery.of(context).size.height;
 
     return SingleChildScrollView(
@@ -41,12 +41,18 @@ class _RegisterState extends State<Register> {
         child: Column(
           mainAxisSize: MainAxisSize.max,
           children: [
+            SizedBox(
+              height: 10.0,
+            ),
             InkWell(
-              onTap: () => print("selected"),
+              onTap: onTap: (){
+                _selectAndPickImage();
+              },,
               child: CircleAvatar(
                 radius: _screenWidth * 0.15,
                 backgroundColor: Colors.white,
-                backgroundImage:  _imageFile == null ? null : FileImage(_imageFile),
+                backgroundImage: _imageFile == null ? null : FileImage(
+                    _imageFile),
                 child: _imageFile == null
                     ? Icon(
                   Icons.add_photo_alternate,
@@ -90,9 +96,16 @@ class _RegisterState extends State<Register> {
               ),
             ),
             RaisedButton(
-              onPressed: () => ('clicked'),
+              onPressed: () {
+                uploadAndSaveImage();
+              },
               color: Colors.pink,
-              child: Text("Sign up", style: TextStyle(color: Colors.white),),
+              child: Text(
+                "Sign up",
+                style: TextStyle(
+                    color: Colors.white
+                ),
+              ),
             ),
             SizedBox(
               height: 30.0,
@@ -105,10 +118,120 @@ class _RegisterState extends State<Register> {
             SizedBox(
               height: 15.0,
             )
-            ],
+          ],
         ),
       ),
     );
   }
+
+  Future<void> _selectAndPickImage() async {
+    final _imageFile = await ImagePicker.pickImage(source: ImageSource.gallery);
+
+  }
+
+
+  Future<void> uploadAndSaveImage() async {
+    if (_imageFile == null) {
+      showDialog(
+          context: context,
+          builder: (c) {
+            return ErrorAlertDialog(message: "Please select an image",);
+          }
+      );
+    } else {
+      _passwordTextEditingController.text == _cPasswordTextEditingController.text
+
+          ? _emailTextEditingController.text.isNotEmpty &&
+          _passwordTextEditingController.text.isNotEmpty &&
+          _cPasswordTextEditingController.text.isNotEmpty &&
+          _nameTextEditingController.text.isNotEmpty
+
+          ? uploadToStorage()
+
+          : displayDialogue("Please fill up the complete registration form")
+
+          : displayDialogue("Password do not match");
+    }
+  }
+
+  displayDialogue(String msg) {
+    showDialog(
+        context: context,
+        builder: (c) {
+          return ErrorAlertDialog(message: msg,);
+        }
+    );
+  }
+
+  uploadToStorage() async {
+    showDialog(
+        context: context,
+        builder: (c) {
+          return LoadingAlertDialog(
+              message: "Authenticating, please wait.......");
+        });
+
+    String imageFileName = DateTime.now().millisecondsSinceEpoch.toString();
+
+    StorageReference storageReference = FirebaseStorage.instance.ref().child(imageFileName);
+
+    StorageUploadTask storageUploadTask = storageReference.putFile(_imageFile);
+
+    StorageTaskSnapshot taskSnapshot = await storageUploadTask.onComplete;
+
+
+    await taskSnapshot.ref.getDownloadURL().then((urlImage) {
+      userImageUrl = urlImage;
+
+      _registerUser();
+    });
+  }
+
+  FirebaseAuth _auth = FirebaseAuth.instance;
+
+  void _registerUser() async {
+    FirebaseUser firebaseUser;
+
+    await _auth.createUserWithEmailAndPassword
+      (
+      email: _emailTextEditingController.text.trim(),
+      password: _passwordTextEditingController.text.trim(),
+    ).then((auth) {
+      firebaseUser = auth.user;
+    }).catchError((error) {
+      Navigator.pop(context);
+      showDialog(
+          context: context,
+          builder: (c) {
+            return ErrorAlertDialog(message: error.message.toString(),);
+          }
+      );
+    });
+
+    if (firebaseUser != null) {
+      saveUserInfoToFireStore(firebaseUser).then((value) {
+        Navigator.pop(context);
+        Route route = MaterialPageRoute(builder: (c) => StoreHome());
+        Navigator.pushReplacement(context, route);
+      });
+    }
+  }
+
+  Future saveUserInfoToFireStore(FirebaseUser fUser) async {
+    Firestore.instance.collection("users").document(fUser.uid).setData({
+      "uid": fUser.uid,
+      "email": fUser.email,
+      "name": _nameTextEditingController.text.trim(),
+      "url": userImageUrl,
+    });
+
+    await EcommerceApp.sharedPreferences.setString("uid", fUser.uid);
+    await EcommerceApp.sharedPreferences.setString(EcommerceApp.userEmail, fUser.uid);
+    await EcommerceApp.sharedPreferences.setString(EcommerceApp.userName, _nameTextEditingController.text);
+    await EcommerceApp.sharedPreferences.setString(EcommerceApp.userAvatarUrl, userImageUrl);
+    await EcommerceApp.sharedPreferences.setStringList(EcommerceApp.userCartList, ["garbageValue"]);
+
+  }
 }
+
 
